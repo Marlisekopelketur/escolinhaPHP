@@ -37,6 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $comment = "";
     } else {
         $comment = test_input($_POST["comment"]);
+        $comment = wordwrap($comment, 70);
     }
 
     if (empty($_POST["gender"])) {
@@ -44,6 +45,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $gender = test_input($_POST["gender"]);
     }
+    /* Envio de email */
+    $para = 'mpazakopelke@gmail.com';
+    $assunto = 'E-mail através de formulário - Escolinha GerTec';
+    $mensagem = "De: $name <$email> \r\n";
+    $mensagem .="Website: $website \r\n";
+    $mensagem .="Sexo: $gender \r\n";
+    $mensagem .="Comentários \r\n\n $comment";
+
+    $headers = "From: $name <$email> \r\n" .
+            'X-Mailer: PHP/' . phpversion();
+
+    if (strlen($nameErr) == 0 && 
+            strlen($emailErr) == 0 && 
+            strlen($websiteErr) == 0 &&
+            strlen($name) != 0 &&
+            strlen($email) != 0) {
+        
+        mail($para, $assunto, $mensagem, $headers);
+        $statusMail = TRUE;
+    } else
+        $statusMail = FALSE;
+    //** Fim da função de envio de e-mail
 }
 
 //Limpeza dos dados de entrada
@@ -88,24 +111,30 @@ function test_input($data) {
             Website:
             <input type="text" 
                    name="website"
-                   
+
                    value="<?php echo $website; ?>">
             <span class="error"><?php echo @$websiteErr; ?></span>
             <br><br>
-            Comment: <textarea name="comment" rows="5" cols="40"><?= $coment; ?></textarea>
+            Comment: <textarea name="comment" rows="5" cols="40"><?= $comment; ?></textarea>
             <br><br>
-            Gender:
+            Sexo:
             <input type="radio" name="gender" value="female"  class="<?= strlen($nameErr) != 0 ? "err" : ""; ?>" <?php if (isset($gender) && $gender == "female") echo "checked"; ?>
-                   value="female">Female>Femenino
+                   value="female">Femenino
             <input type="radio" name="gender" value="male"  class="<?= strlen($nameErr) != 0 ? "err" : ""; ?>" <?php if (isset($gender) && $gender == "female") echo "checked"; ?>
-                   value="female">Female>Masculino
+                   value="female">Masculino
             <span class="error">* <?php echo @$genderErr; ?></span>
             <br><br>
             <input type="submit" name="submit" value="Enviar"> 
 
         </form>
 
-
+<?php
+if (isset($statusMail) && $statusMail) {
+    echo "<h1>E-mail enviado!</h1>";
+} else {
+    echo "<h1 class='err'>E-mail não enviado!</h1>";
+}
+?>
 
     </body>
 </html>
